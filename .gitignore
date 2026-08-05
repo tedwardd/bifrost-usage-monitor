@@ -1,0 +1,9 @@
+# Build output
+/bifrost-quota-monitor
+
+# Local design and planning notes, not for publication
+/docs/
+
+# Editor and tooling state
+.codesearch.db/
+.DS_Store
