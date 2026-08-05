@@ -74,10 +74,20 @@ Re-running is safe. Add `--force` to redo every step.
 |---|---|
 | `bifrost-quota-monitor init` | One-time setup |
 | `bifrost-quota-monitor status` | Print the status segment, reading the cache |
+| `bifrost-quota-monitor status --no-color` | Same, without tmux style escapes |
 | `bifrost-quota-monitor refresh` | Signal the daemon to poll immediately |
 | `bifrost-quota-monitor daemon` | Run the poller, normally started by launchd |
 
 `init` binds `<prefix> F6` to `refresh`.
+
+`status` takes `--no-color` (also spelled `--no-colour`, or `--plain`) to print the segment
+without tmux style escapes, for a shell prompt, a pipe, or a script where `#[fg=green]` would
+show up literally:
+
+```sh
+$ bifrost-quota-monitor status --no-color
+Bifrost: $83.43/$250.00
+```
 
 ## Configuration
 

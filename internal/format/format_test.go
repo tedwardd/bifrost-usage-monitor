@@ -143,3 +143,83 @@ func TestNoTrailingNewline(t *testing.T) {
 		t.Error("placeholder must not contain a newline")
 	}
 }
+
+// The plain variant is for anything that is not a tmux status line: a shell
+// prompt, a pipe, a script. tmux style escapes would render literally there.
+func TestPlainOmitsStyleEscapes(t *testing.T) {
+	got := format.StatusLinePlain(entry(52.2383, 250, 20.9))
+	if got != "Bifrost: $52.24/$250.00" {
+		t.Errorf("got %q, want the bare segment", got)
+	}
+	if strings.Contains(got, "#[") {
+		t.Errorf("plain output must carry no tmux escapes, got %q", got)
+	}
+}
+
+// Colour is the only difference. Every other rendering rule has to agree, or the
+// two paths drift and one of them starts lying.
+func TestPlainMatchesColouredBodyInEveryState(t *testing.T) {
+	stale := entry(15, 250, 6)
+	stale.FetchedAt = time.Now().Add(-20 * time.Minute)
+	hard := entry(15, 250, 6)
+	hard.Error = "key unset"
+	unlimited := entry(15.44, 0, 0)
+
+	cases := map[string]cache.Entry{
+		"normal":    entry(52.2383, 250, 20.9),
+		"red":       entry(240, 250, 96),
+		"unlimited": unlimited,
+		"stale":     stale,
+		"hard":      hard,
+	}
+	for name, e := range cases {
+		plain := format.StatusLinePlain(e)
+		stripped := stripStyles(format.StatusLine(e))
+		if plain != stripped {
+			t.Errorf("%s: plain %q != de-styled coloured %q", name, plain, stripped)
+		}
+	}
+}
+
+func TestPlainPlaceholders(t *testing.T) {
+	stale := entry(15, 250, 6)
+	stale.FetchedAt = time.Now().Add(-20 * time.Minute)
+	if got := format.StatusLinePlain(stale); got != "Bifrost: ??" {
+		t.Errorf("stale: got %q, want Bifrost: ??", got)
+	}
+	if got := format.FallbackNoCachePlain(); got != "Bifrost: --" {
+		t.Errorf("no cache: got %q, want Bifrost: --", got)
+	}
+}
+
+func TestPlainUnlimitedOmitsDenominator(t *testing.T) {
+	got := format.StatusLinePlain(entry(15.44, 0, 0))
+	if got != "Bifrost: $15.44" {
+		t.Errorf("got %q, want Bifrost: $15.44", got)
+	}
+}
+
+func TestPlainHasNoTrailingNewline(t *testing.T) {
+	if strings.ContainsAny(format.StatusLinePlain(entry(1, 100, 1)), "\n") {
+		t.Error("plain segment must not contain a newline")
+	}
+	if strings.ContainsAny(format.FallbackNoCachePlain(), "\n") {
+		t.Error("plain placeholder must not contain a newline")
+	}
+}
+
+// stripStyles removes tmux inline style sequences so the two renderings can be
+// compared on content alone.
+func stripStyles(s string) string {
+	for {
+		open := strings.Index(s, "#[")
+		if open < 0 {
+			return s
+		}
+		close := strings.Index(s[open:], "]")
+		if close < 0 {
+			return s
+		}
+		s = s[:open] + s[open+close+1:]
+	}
+}
