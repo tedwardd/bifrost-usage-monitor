@@ -31,19 +31,33 @@ a `429` waits out the interval in the response's `Retry-After` header when it ca
 
 ## Requirements
 
-- macOS. The background service is a launchd user agent, and there is no systemd equivalent
-  in this version. Everything except `init`'s service step is platform independent, so a Linux
-  port is mostly a matter of adding a unit file.
+- macOS for the background service, which is a launchd user agent. Linux builds and runs, and
+  `init` does everything except install a service there, so the daemon needs supervising by
+  hand until a unit file exists.
 - tmux.
 - A Bifrost deployment with governance enabled, and a virtual key that has a budget.
 - Go 1.26 or newer to build.
 
 ## Install
 
+Homebrew:
+
+```sh
+brew install --cask tedwardd/tap/bifrost-quota-monitor
+```
+
+An upgrade replaces the binary, and the cask restarts the launchd agent for you when `init`
+has already installed one, since the running agent would otherwise stay on the old binary.
+
+From source:
+
 ```sh
 go build -o bifrost-quota-monitor .
 mkdir -p ~/.local/bin && install -m 755 bifrost-quota-monitor ~/.local/bin/
 ```
+
+Prebuilt archives for macOS and Linux, on both amd64 and arm64, are attached to each
+[release](https://github.com/tedwardd/bifrost-usage-monitor/releases).
 
 ## Setup
 
@@ -211,6 +225,17 @@ the code.
 The daemon makes exactly one kind of request: `GET {base_url}/api/governance/virtual-keys/quota`,
 authenticated with the `x-bf-vk` header. There is no telemetry and no update check. The
 `status` command makes no requests at all.
+
+## Releases
+
+Pushing to `main` runs the test suite, tags a version from the commit messages, builds macOS
+and Linux archives for both architectures, and pushes a generated cask to
+[tedwardd/homebrew-tap](https://github.com/tedwardd/homebrew-tap). A commit with no
+version-bumping prefix produces no tag and no release.
+
+The release job needs one secret, `HOMEBREW_TAP_TOKEN`, with write access to the tap
+repository. `GITHUB_TOKEN` cannot do it: that token is scoped to this repository alone. The job
+falls back to `GH_PAT` if the narrower secret is not set.
 
 ## Development
 

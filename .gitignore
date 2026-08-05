@@ -7,3 +7,6 @@
 # Editor and tooling state
 .codesearch.db/
 .DS_Store
+
+# GoReleaser output
+/dist/

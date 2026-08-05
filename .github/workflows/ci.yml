@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Vet
+        run: go vet ./...
+
+      # The launchd installer is behind a darwin build tag, so a linux-only run
+      # would never compile it. Build for macOS too rather than discovering a
+      # broken agent at release time.
+      - name: Build for darwin
+        env:
+          GOOS: darwin
+        run: |
+          GOARCH=arm64 go build ./...
+          GOARCH=amd64 go build ./...
+
+      - name: Test
+        run: go test ./... -count=1

@@ -114,8 +114,10 @@ func runInit() {
 	if !force && serviceAlreadyInstalled() {
 		fmt.Println("  Service already installed, skipping.")
 	} else if err := installService(); err != nil {
-		fmt.Fprintf(os.Stderr, "ERROR: service setup: %v\n", err)
-		os.Exit(1)
+		// Not fatal. The three steps above already did the useful work, and on a
+		// platform with no installer the only thing missing is supervision, which
+		// serviceHints explains how to arrange.
+		fmt.Fprintf(os.Stderr, "  WARNING: %v\n", err)
 	}
 
 	if out, err := exec.Command("tmux", "source", tmuxConf).CombinedOutput(); err != nil {

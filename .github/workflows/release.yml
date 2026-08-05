@@ -1,0 +1,52 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      # Gate the release on a green suite. goreleaser does not run tests, so
+      # without this a broken commit on main would still cut a tag, publish
+      # binaries, and push a cask pointing at them.
+      - name: Test
+        run: go test ./... -count=1
+
+      - name: Bump version and push tag
+        id: tag
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Fetch new tag
+        run: git fetch --tags --force
+
+      # No new tag means nothing to release: the tag action skips when the
+      # commits since the last release carry no version-bumping prefix.
+      - uses: goreleaser/goreleaser-action@v6
+        if: steps.tag.outputs.new_tag != ''
+        with:
+          version: "~> v2"
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GORELEASER_CURRENT_TAG: ${{ steps.tag.outputs.new_tag }}
+          # Needs write access to tedwardd/homebrew-tap, which GITHUB_TOKEN does
+          # not have: it is scoped to this repository only. Falls back to GH_PAT
+          # so a dedicated, narrower token can be swapped in without a code change.
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN || secrets.GH_PAT }}
