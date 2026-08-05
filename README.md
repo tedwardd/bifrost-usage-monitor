@@ -233,9 +233,9 @@ and Linux archives for both architectures, and pushes a generated cask to
 [tedwardd/homebrew-tap](https://github.com/tedwardd/homebrew-tap). A commit with no
 version-bumping prefix produces no tag and no release.
 
-The release job needs one secret, `HOMEBREW_TAP_TOKEN`, with write access to the tap
-repository. `GITHUB_TOKEN` cannot do it: that token is scoped to this repository alone. The job
-falls back to `GH_PAT` if the narrower secret is not set.
+The release job needs one secret, `BREW_TAPPER`: a personal access token with `contents: write`
+on the tap repository. The built-in `GITHUB_TOKEN` cannot push there, since it is scoped to this
+repository alone.
 
 ## Development
 
