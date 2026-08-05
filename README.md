@@ -57,7 +57,7 @@ mkdir -p ~/.local/bin && install -m 755 bifrost-quota-monitor ~/.local/bin/
 ```
 
 Prebuilt archives for macOS and Linux, on both amd64 and arm64, are attached to each
-[release](https://github.com/tedwardd/bifrost-usage-monitor/releases).
+[release](https://github.com/tedwardd/bifrost-quota-monitor/releases).
 
 ## Setup
 

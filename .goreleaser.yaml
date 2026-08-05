@@ -28,10 +28,10 @@ homebrew_casks:
       name: homebrew-tap
       branch: main
       token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
-    homepage: https://github.com/tedwardd/bifrost-usage-monitor
+    homepage: https://github.com/tedwardd/bifrost-quota-monitor
     description: tmux status bar segment showing Bifrost virtual key budget usage
     url:
-      verified: github.com/tedwardd/bifrost-usage-monitor/
+      verified: github.com/tedwardd/bifrost-quota-monitor/
     hooks:
       post:
         install: |
@@ -50,7 +50,7 @@ homebrew_casks:
     # One line on purpose. goreleaser renders a multi-line caveat as a `caveats do`
     # block of bare string literals, and Ruby evaluates that to only the last one,
     # so every earlier line is silently dropped from what the user sees.
-    caveats: "Set BIFROST_BASE_URL and BIFROST_API_KEY, then run 'bifrost-quota-monitor init' to install the launchd agent and patch your tmux config. There is no default gateway address, since Bifrost is self-hosted. See https://github.com/tedwardd/bifrost-usage-monitor for setup and troubleshooting."
+    caveats: "Set BIFROST_BASE_URL and BIFROST_API_KEY, then run 'bifrost-quota-monitor init' to install the launchd agent and patch your tmux config. There is no default gateway address, since Bifrost is self-hosted. See https://github.com/tedwardd/bifrost-quota-monitor for setup and troubleshooting."
 
 checksum:
   name_template: checksums.txt
@@ -58,4 +58,4 @@ checksum:
 release:
   github:
     owner: tedwardd
-    name: bifrost-usage-monitor
+    name: bifrost-quota-monitor
